@@ -28,6 +28,7 @@ import org.pcap4j.packet.DnsPacket;
 import org.pcap4j.packet.DnsQuestion;
 import org.pcap4j.packet.DnsRDataA;
 import org.pcap4j.packet.DnsRDataCName;
+import org.pcap4j.packet.DnsRDataMb;
 import org.pcap4j.packet.DnsResourceRecord;
 import org.pcap4j.packet.EthernetPacket;
 import org.pcap4j.packet.IllegalRawDataException;
@@ -46,7 +47,7 @@ public class Loop {
 
   private static final Class<DnsDomainName> CLAZZ = DnsDomainName.class;
   private static final String COUNT_KEY = Loop.class.getName() + ".count";
-  private static final int COUNT = Integer.getInteger(COUNT_KEY, 34);
+  private static final int COUNT = Integer.getInteger(COUNT_KEY, 710);
 
   private static final String READ_TIMEOUT_KEY = Loop.class.getName() + ".readTimeout";
   private static final int READ_TIMEOUT = Integer.getInteger(READ_TIMEOUT_KEY, 10); // [ms]
@@ -82,7 +83,7 @@ public class Loop {
 
     // final PcapHandle handle = nif.openLive(SNAPLEN, PromiscuousMode.PROMISCUOUS,
     // READ_TIMEOUT);
-    final PcapHandle handle = Pcaps.openOffline("D:\\pcap1.pcap");
+    final PcapHandle handle = Pcaps.openOffline("D:\\pcap2.pcap");
 
     if (filter.length() != 0) {
       handle.setFilter(filter, BpfCompileMode.OPTIMIZE);
@@ -102,20 +103,21 @@ public class Loop {
         EthernetPacket ethernetPacket = packet.get(EthernetPacket.class);
         UdpPacket udpPacket = packet.get(UdpPacket.class);
         DnsPacket dnsPacket = packet.get(DnsPacket.class);
-        System.out.println("source mac      : " + ethernetPacket.getHeader().getSrcAddr());
-        System.out.println("destination mac : " + ethernetPacket.getHeader().getDstAddr());
-        System.out.println("ip src          : " + ipPacket.getHeader().getSrcAddr().getHostAddress()); // get src addr
-        System.out.println("ip dst          : " + ipPacket.getHeader().getDstAddr().getHostAddress()); // get dst addr
-        System.out.println("protocol        : " + ipPacket.getHeader().getProtocol()); // get protocol
+        
+        System.out.println("source mac/" + ethernetPacket.getHeader().getSrcAddr());
+        System.out.println("destination mac/" + ethernetPacket.getHeader().getDstAddr());
+        System.out.println("ip src/" + ipPacket.getHeader().getSrcAddr().getHostAddress()); // get src addr
+        System.out.println("ip dst/" + ipPacket.getHeader().getDstAddr().getHostAddress()); // get dst addr
+        System.out.println("protocol/" + ipPacket.getHeader().getProtocol()); // get protocol
         try {
-          // if (tcpPacket != null){
-          //   System.out.println("source port     : "+ tcpPacket.getHeader().getSrcPort());
-          //   System.out.println("destination port: "+ tcpPacket.getHeader().getDstPort());
-          // }
-          // if (udpPacket != null){
-          //   System.out.println( "source port     : "+udpPacket.getHeader().getSrcPort());
-          //   System.out.println( "destination port: "+udpPacket.getHeader().getDstPort());
-          // }
+          if (tcpPacket != null){
+            System.out.println("source port/"+ tcpPacket.getHeader().getSrcPort());
+            System.out.println("destination port/"+ tcpPacket.getHeader().getDstPort());
+          }
+          if (udpPacket != null){
+            System.out.println( "source port/"+udpPacket.getHeader().getSrcPort());
+            System.out.println( "destination port/"+udpPacket.getHeader().getDstPort());
+          }
           if (dnsPacket != null){
             // System.out.println(dnsPacket.getHeader().getQuestions());
             List<DnsQuestion> gq = dnsPacket.getHeader().getQuestions();
@@ -130,15 +132,14 @@ public class Loop {
                 DnsRDataA aData=(DnsRDataA)a;
                 System.out.println("ip addr"+aData.getAddress());
               }
+              
               if (a.getClass()==DnsRDataCName.class){
                 DnsRDataCName aDataCName = (DnsRDataCName)a;
-                System.out.println("cname"+aDataCName.getCName());
+                System.out.println("cname/"+aDataCName.getCName().getName());
               }
-              
-              // System.out.println(ga.get(i).getRData());
-              // System.out.println(a);
+              // System.out.println(ga.get(i).getName().getName());
             }
-
+            // System.out.println(ga);
             // DnsPacket dnsPacket2 = DnsPacket.newPacket(packet.getRawData(), 0, packet.getRawData().length);
             // byte[] ipBytes = dnsPacket2.getPayload().getRawData();
             // System.out.println(ByteArrays.toHexString(ipBytes,":"));
