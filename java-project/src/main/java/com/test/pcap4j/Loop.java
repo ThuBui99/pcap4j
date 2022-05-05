@@ -67,7 +67,7 @@ public class Loop {
 
   private static void writeToFile(){
     try {
-      fw = new FileWriter("D:\\testout.csv");
+      fw = new FileWriter("out.csv");
       fw.write("mac_client, domain, ip, ip_type \n");
     } catch (IOException e) {
       e.printStackTrace();
