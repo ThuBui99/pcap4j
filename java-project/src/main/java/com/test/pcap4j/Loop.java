@@ -256,6 +256,7 @@ public class Loop {
             }
             System.out.println("IPv4");
             p.setIp_type("IPv4");
+            listPacket.add(p);
             // fw.write(",,,"+"IPv4"+"\n");
           }
           
