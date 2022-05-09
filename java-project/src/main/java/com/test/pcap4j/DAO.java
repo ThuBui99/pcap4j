@@ -1,3 +1,5 @@
+package com.test.pcap4j;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -6,7 +8,7 @@ public class DAO {
 
     public DAO(){
         if(con == null){
-            String dbUrl = "jdbc:mysql://localhost:3306/traffic_results?autoReconnect=true&useSSL=false";
+            String dbUrl = "jdbc:mysql://localhost:3306/tiktok_packet_results?autoReconnect=true&useSSL=false";
             String dbClass = "com.mysql.jdbc.Driver";
 
             try {
