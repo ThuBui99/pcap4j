@@ -6,6 +6,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -15,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 // import java.util.ArrayList;
+import java.sql.SQLException;
 
 import org.pcap4j.core.BpfProgram.BpfCompileMode;
 import org.pcap4j.core.NotOpenException;
@@ -39,7 +43,7 @@ import org.pcap4j.util.ByteArrays;
 public class Loop {
 
   private static final String COUNT_KEY = Loop.class.getName() + ".count";
-  private static final int COUNT = Integer.getInteger(COUNT_KEY, 1);// 8445
+  private static final int COUNT = Integer.getInteger(COUNT_KEY,1000000000 );// 8445 1000000000
 
   private static final String READ_TIMEOUT_KEY = Loop.class.getName() + ".readTimeout";
   private static final int READ_TIMEOUT = Integer.getInteger(READ_TIMEOUT_KEY, 10); // [ms]
@@ -103,45 +107,57 @@ public class Loop {
   // e.printStackTrace();
   // }
   // }
-
-  private static void writeToFile() {
-    try {
-      fw = new FileWriter("out.csv");
-      fw.write("mac_client, domain, ip, ip_type \n");
-    } catch (IOException e) {
-      e.printStackTrace();
-      try {
-        fw.close();
-      } catch (IOException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-      }
-    }
-
-    for (TikTokPacket tikTokPacket : listPacket) {
-      int rowNum = tikTokPacket.getIp_addr().size();
-      String macClient, domain, ip, ip_type;
-      macClient = tikTokPacket.getMac_client();
-      domain = tikTokPacket.getDomain();
-      ip_type = tikTokPacket.getIp_type();
-
-      for (int i = 0; i < rowNum; i++) {
-        ip = tikTokPacket.getIp_addr().get(i);
-        try {
-          fw.write(macClient + "," + domain + "," + ip + "," + ip_type + "\n");
-        } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-      }
-    }
-    try {
-      fw.close();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+  
+  private static void writeToDatabase(List<TikTokPacket> list) throws SQLException{
+    TikTokPacketDAO t = new TikTokPacketDAO();
+    // for (TikTokPacket t : list){
+    //   TikTokPacketDAO.insertTiktokPackage(t);
+    // }
+    // TikTokPacketDAO.insertListTiktokPackage(list);
+    TikTokPacketDAO.insertListTiktokPacket(list);
+    
+    
   }
+  
+  
+  // private static void writeToFile() {
+  //   try {
+  //     fw = new FileWriter("out.csv");
+  //     fw.write("mac_client, domain, ip, ip_type \n");
+  //   } catch (IOException e) {
+  //     e.printStackTrace();
+  //     try {
+  //       fw.close();
+  //     } catch (IOException e1) {
+  //       // TODO Auto-generated catch block
+  //       e1.printStackTrace();
+  //     }
+  //   }
+
+  //   for (TikTokPacket tikTokPacket : listPacket) {
+  //     int rowNum = tikTokPacket.getIp_addr().size();
+  //     String macClient, domain, ip, ip_type;
+  //     macClient = tikTokPacket.getMac_client();
+  //     domain = tikTokPacket.getDomain();
+  //     ip_type = tikTokPacket.getIp_type();
+
+  //     for (int i = 0; i < rowNum; i++) {
+  //       ip = tikTokPacket.getIp_addr().get(i);
+  //       try {
+  //         fw.write(macClient + "," + domain + "," + ip + "," + ip_type + "\n");
+  //       } catch (IOException e) {
+  //         // TODO Auto-generated catch block
+  //         e.printStackTrace();
+  //       }
+  //     }
+  //   }
+  //   try {
+  //     fw.close();
+  //   } catch (IOException e) {
+  //     // TODO Auto-generated catch block
+  //     e.printStackTrace();
+  //   }
+  // }
 
   // public static Object object = new Object();
   private static String filepath;
@@ -161,7 +177,7 @@ public class Loop {
         public void gotPacket(Packet packet) {
           EthernetPacket ethernetPacket0 = packet.get(EthernetPacket.class);
 
-          // System.out.println(handle.getTimestamp());
+          // // System.out.println(handle.getTimestamp());
           TikTokPacket tp = new TikTokPacket();
           tp.setMac_client(ethernetPacket0.getHeader().getDstAddr() + "");
 
@@ -178,7 +194,7 @@ public class Loop {
               tp.setDomain(gq.get(0).getQName() + "");
 
               // for (int i = 0; i < gq.size(); i++) {
-              // System.out.println(gq.get(i).getQName().getName());
+              // // System.out.println(gq.get(i).getQName().getName());
               // tp.getDomain().add(gq.get(i).getQName() + "");
               // // tp.getDomain()
               // }
@@ -187,16 +203,16 @@ public class Loop {
                 DnsRData a = ga.get(i).getRData();
                 if (a.getClass() == DnsRDataA.class) {
                   DnsRDataA aDataA = (DnsRDataA) a;
-                  System.out.println("addr/" + aDataA.getAddress());
+                  // System.out.println("addr/" + aDataA.getAddress());
                   tp.getIp_addr().add(aDataA.getAddress() + "");
                 }
                 // if (a.getClass()==DnsRDataCName.class){
                 // DnsRDataCName aDataCName = (DnsRDataCName)a;
-                // System.out.println(aDataCName.getCName().getName());
+                // // System.out.println(aDataCName.getCName().getName());
 
                 // }
               }
-              System.out.println("IPv6");
+              // System.out.println("IPv6");
               tp.setIp_type("IPv6");
               listPacket.add(tp);
             }
@@ -207,7 +223,7 @@ public class Loop {
               List<DnsQuestion> gq = dnsPacket.getHeader().getQuestions();
               tp.setDomain(gq.get(0).getQName() + "");
               // for (int i = 0; i < gq.size(); i++) {
-              // System.out.println(gq.get(i).getQName().getName());
+              // // System.out.println(gq.get(i).getQName().getName());
               // // tp.getDomain().add(gq.get(i).getQName() + "");
               // }
               List<DnsResourceRecord> ga = dnsPacket.getHeader().getAnswers();
@@ -215,21 +231,21 @@ public class Loop {
                 DnsRData a = ga.get(i).getRData();
                 if (a.getClass() == DnsRDataA.class) {
                   DnsRDataA aDataA = (DnsRDataA) a;
-                  System.out.println("addr/" + aDataA.getAddress());
+                  // System.out.println("addr/" + aDataA.getAddress());
                   tp.getIp_addr().add(aDataA.getAddress() + "");
                 }
                 // if (a.getClass()==DnsRDataCName.class){
                 // DnsRDataCName aDataCName = (DnsRDataCName)a;
-                // System.out.println(aDataCName.getCName().getName());
+                // // System.out.println(aDataCName.getCName().getName());
 
                 // }
               }
-              System.out.println("IPv4");
+              // System.out.println("IPv4");
               tp.setIp_type("IPv4");
               listPacket.add(tp);
             }
             if (ByteArrays.getInt(eth_payload, 2, 2) == 0x8864) {
-              // System.out.println("vlan type 8864");
+              // // System.out.println("vlan type 8864");
             }
           } catch (Exception e) {
             e.printStackTrace();
@@ -242,7 +258,7 @@ public class Loop {
         e.printStackTrace();
       }
       handle.close();
-      writeToFile();
+      //writeToFile();
     } catch (PcapNativeException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -254,19 +270,39 @@ public class Loop {
 
     String filter = args.length != 0 ? args[0] : "";
 
-    System.out.println(COUNT_KEY + ": " + COUNT);
-    System.out.println(READ_TIMEOUT_KEY + ": " + READ_TIMEOUT);
-    System.out.println(SNAPLEN_KEY + ": " + SNAPLEN);
-    System.out.println("\n");
+    // System.out.println(COUNT_KEY + ": " + COUNT);
+    // System.out.println(READ_TIMEOUT_KEY + ": " + READ_TIMEOUT);
+    // System.out.println(SNAPLEN_KEY + ": " + SNAPLEN);
+    // System.out.println("\n");
     // final PcapHandle handle = nif.openLive(SNAPLEN, PromiscuousMode.PROMISCUOUS,
     // READ_TIMEOUT);
-    System.out.println("Start");
+    // System.out.println("Start"); 
     // Creating a File object for directory
     // List of all files and directories
-    File directoryPath = new File("1");
+    File directoryPath = new File("C:\\Users\\THU BUI\\OneDrive\\Máy tính\\1"); //C:\\Users\\THU BUI\\OneDrive\\Máy tính\\
     File fileList[] = directoryPath.listFiles();
     for (File file : fileList) {
       docfile(file.getPath(), filter);
+      // try {
+      //   writeToDatabase(listPacket);
+      //   listPacket = new ArrayList<TikTokPacket>();
+      // } catch (SQLException e) {
+      //   // TODO Auto-generated catch block
+      //   e.printStackTrace();
+      // }
+      System.out.println("Read done!"+file.getName());
+    }
+    System.out.println("Read done!");
+
+    // Boolean boolean1 = new TikTokPacketDAO().addListTikTokPacket(listPacket);
+    // System.out.println(boolean1);
+    try {
+      System.out.println("Start write to DB");
+      writeToDatabase(listPacket);
+      System.out.println("insert successful");
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
 
     // final PcapHandle handle =
@@ -281,7 +317,7 @@ public class Loop {
     // public void gotPacket(Packet packet) {
     // EthernetPacket ethernetPacket0 = packet.get(EthernetPacket.class);
 
-    // // System.out.println(handle.getTimestamp());
+    // // // System.out.println(handle.getTimestamp());
     // TikTokPacket tp = new TikTokPacket();
     // tp.setMac_client(ethernetPacket0.getHeader().getDstAddr() + "");
 
@@ -296,7 +332,7 @@ public class Loop {
     // DnsPacket dnsPacket = ipPacket3.get(DnsPacket.class);
     // List<DnsQuestion> gq = dnsPacket.getHeader().getQuestions();
     // for (int i = 0; i < gq.size(); i++) {
-    // System.out.println(gq.get(i).getQName().getName());
+    // // System.out.println(gq.get(i).getQName().getName());
     // tp.getDomain().add(gq.get(i).getQName() + "");
     // }
     // List<DnsResourceRecord> ga = dnsPacket.getHeader().getAnswers();
@@ -304,16 +340,16 @@ public class Loop {
     // DnsRData a = ga.get(i).getRData();
     // if (a.getClass() == DnsRDataA.class) {
     // DnsRDataA aDataA = (DnsRDataA) a;
-    // System.out.println("addr/" + aDataA.getAddress());
+    // // System.out.println("addr/" + aDataA.getAddress());
     // tp.getIp_addr().add(aDataA.getAddress() + "");
     // }
     // // if (a.getClass()==DnsRDataCName.class){
     // // DnsRDataCName aDataCName = (DnsRDataCName)a;
-    // // System.out.println(aDataCName.getCName().getName());
+    // // // System.out.println(aDataCName.getCName().getName());
 
     // // }
     // }
-    // System.out.println("IPv6");
+    // // System.out.println("IPv6");
     // tp.setIp_type("IPv6");
     // listPacket.add(tp);
     // // fw.write(",,,"+"IPv6" +"\n");
@@ -325,7 +361,7 @@ public class Loop {
     // DnsPacket dnsPacket = ipPacket4.get(DnsPacket.class);
     // List<DnsQuestion> gq = dnsPacket.getHeader().getQuestions();
     // for (int i = 0; i < gq.size(); i++) {
-    // System.out.println(gq.get(i).getQName().getName());
+    // // System.out.println(gq.get(i).getQName().getName());
     // tp.getDomain().add(gq.get(i).getQName() + "");
     // }
     // List<DnsResourceRecord> ga = dnsPacket.getHeader().getAnswers();
@@ -333,21 +369,21 @@ public class Loop {
     // DnsRData a = ga.get(i).getRData();
     // if (a.getClass() == DnsRDataA.class) {
     // DnsRDataA aDataA = (DnsRDataA) a;
-    // System.out.println("addr/" + aDataA.getAddress());
+    // // System.out.println("addr/" + aDataA.getAddress());
     // tp.getIp_addr().add(aDataA.getAddress() + "");
     // }
     // // if (a.getClass()==DnsRDataCName.class){
     // // DnsRDataCName aDataCName = (DnsRDataCName)a;
-    // // System.out.println(aDataCName.getCName().getName());
+    // // // System.out.println(aDataCName.getCName().getName());
 
     // // }
     // }
-    // System.out.println("IPv4");
+    // // System.out.println("IPv4");
     // tp.setIp_type("IPv4");
     // listPacket.add(tp);
     // }
     // if (ByteArrays.getInt(eth_payload, 2, 2) == 0x8864) {
-    // // System.out.println("vlan type 8864");
+    // // // System.out.println("vlan type 8864");
     // }
     // } catch (Exception e) {
     // e.printStackTrace();
@@ -361,14 +397,14 @@ public class Loop {
     // }
     // InetAddress[] machines = InetAddress.getAllByName("yahoo.com");
     // for(InetAddress address : machines){
-    // System.out.println(address.getHostAddress());
+    // // System.out.println(address.getHostAddress());
     // }
 
     // PacketListener listener = new PacketListener() {
     // @Override
     // public void gotPacket(Packet packet) {
-    // System.out.println(handle.getTimestamp());
-    // System.out.println(packet);
+    // // System.out.println(handle.getTimestamp());
+    // // System.out.println(packet);
     // }
     // };
 
@@ -378,25 +414,33 @@ public class Loop {
     // e.printStackTrace();
     // }
     // PcapStat ps = handle.getStats();
-    // System.out.println("ps_recv: " + ps.getNumPacketsReceived());
-    // System.out.println("ps_drop: " + ps.getNumPacketsDropped());
-    // System.out.println("ps_ifdrop: " + ps.getNumPacketsDroppedByIf());
+    // // System.out.println("ps_recv: " + ps.getNumPacketsReceived());
+    // // System.out.println("ps_drop: " + ps.getNumPacketsDropped());
+    // // System.out.println("ps_ifdrop: " + ps.getNumPacketsDroppedByIf());
     // if (Platform.isWindows()) {
-    // System.out.println("bs_capt: " + ps.getNumPacketsCaptured());
+    // // System.out.println("bs_capt: " + ps.getNumPacketsCaptured());
     // }
     // handle.close();
     // writeToFile();
 
     // select/insert database
-    TikTokPacket tikTokPacket = new TikTokPacket();
     // tikTokPacket = new TikTokPacketDAO().searchTikTokPacket().get(0);
-    // System.out.println(tikTokPacket.getMac_client() +"," + tikTokPacket.getDomain() +","+ tikTokPacket.getIp_addr() +"," + tikTokPacket.getIp_type());
-    tikTokPacket.setMac_client("a0:65:18:74:fc:23");
-    tikTokPacket.setDomain("www.google.com");
-    tikTokPacket.setIp_type("IPv4");
-    // tikTokPacket.setIp_addr(ip_addr);
-    boolean boo = new TikTokPacketDAO().addTikTokPacket(tikTokPacket);
-    System.out.println(boo);
-    boolean boo2 = new TikTokPacketDAO().addListTikTokPacket((List<TikTokPacket>) tikTokPacket);
+    // // System.out.println(tikTokPacket.getMac_client() +"," + tikTokPacket.getDomain() +","+ tikTokPacket.getIp_addr() +"," + tikTokPacket.getIp_type());
+    // TikTokPacket tikTokPacket = new TikTokPacket();
+    // tikTokPacket.setMac_client("a0:65:18:74:fc:23");
+    // tikTokPacket.setDomain("www.google.com");
+    // tikTokPacket.setIp_type("IPv4");
+    
+    // tikTokPacket.setIp_addr("");
+    // boolean boo = new TikTokPacketDAO().addTikTokPacket(tikTokPacket);
+    // // System.out.println(boo);
+    //boolean boo2 = new TikTokPacketDAO().addListTikTokPacket(listPacket);
+    // System.out.println(boo2);
+    // try {
+    //   writeToDatabase(listPacket);
+    // } catch (SQLException e) {
+    //   // TODO Auto-generated catch block
+    //   e.printStackTrace();
+    // }
   }
 }
