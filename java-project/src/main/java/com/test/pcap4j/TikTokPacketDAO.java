@@ -133,7 +133,7 @@ public class TikTokPacketDAO extends DAO {
         }
         pstmt.setString(4, tikTokPacket.getIp_type());
     }
-
+    
     public static void insertListTiktokPacket(List<TikTokPacket> listTikTokPacket) throws SQLException {
         try {
             con.setAutoCommit(false);
@@ -164,9 +164,8 @@ public class TikTokPacketDAO extends DAO {
                         pstmt.setString(5, tikTokPacket.getIp_type());
                     } else
                         pstmt.setString(5, null);
-                    // System.out.println(arrayList.get(i));
                     pstmt.executeUpdate();
-                    System.out.println("execute success"+arrayList.get(i));
+                    // System.out.println("execute success"+arrayList.get(i));
                 }
                 
                 
@@ -188,6 +187,5 @@ public class TikTokPacketDAO extends DAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }

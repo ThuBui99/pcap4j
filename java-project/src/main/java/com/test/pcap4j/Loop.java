@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Handler;
 
@@ -43,7 +44,7 @@ import org.pcap4j.util.ByteArrays;
 public class Loop {
 
   private static final String COUNT_KEY = Loop.class.getName() + ".count";
-  private static final int COUNT = Integer.getInteger(COUNT_KEY,1000000000 );// 8445 1000000000
+  private static final int COUNT = Integer.getInteger(COUNT_KEY, 50000);// 8445 1000000000 30000
 
   private static final String READ_TIMEOUT_KEY = Loop.class.getName() + ".readTimeout";
   private static final int READ_TIMEOUT = Integer.getInteger(READ_TIMEOUT_KEY, 10); // [ms]
@@ -61,7 +62,7 @@ public class Loop {
   // fw = new FileWriter("out.csv");
   // fw.write("mac_client, domain, ip, ip_type \n");
   // } catch (IOException e) {
-  // e.printStackTrace();
+  // //e.printStackTrace();
   // try {
   // fw.close();
   // } catch (IOException e1) {
@@ -96,7 +97,7 @@ public class Loop {
   // fw.write(macClient + "," + domain + "," + ip + "," + ip_type + "\n");
   // } catch (IOException e) {
   // // TODO Auto-generated catch block
-  // e.printStackTrace();
+  // //e.printStackTrace();
   // }
   // }
   // }
@@ -104,7 +105,7 @@ public class Loop {
   // fw.close();
   // } catch (IOException e) {
   // // TODO Auto-generated catch block
-  // e.printStackTrace();
+  // //e.printStackTrace();
   // }
   // }
   
@@ -125,7 +126,7 @@ public class Loop {
   //     fw = new FileWriter("out.csv");
   //     fw.write("mac_client, domain, ip, ip_type \n");
   //   } catch (IOException e) {
-  //     e.printStackTrace();
+  //     //e.printStackTrace();
   //     try {
   //       fw.close();
   //     } catch (IOException e1) {
@@ -147,7 +148,7 @@ public class Loop {
   //         fw.write(macClient + "," + domain + "," + ip + "," + ip_type + "\n");
   //       } catch (IOException e) {
   //         // TODO Auto-generated catch block
-  //         e.printStackTrace();
+  //         //e.printStackTrace();
   //       }
   //     }
   //   }
@@ -155,7 +156,7 @@ public class Loop {
   //     fw.close();
   //   } catch (IOException e) {
   //     // TODO Auto-generated catch block
-  //     e.printStackTrace();
+  //     //e.printStackTrace();
   //   }
   // }
 
@@ -248,20 +249,20 @@ public class Loop {
               // // System.out.println("vlan type 8864");
             }
           } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
           }
         }
       };
       try {
         handle.loop(COUNT, listener);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        //e.printStackTrace();
       }
       handle.close();
       //writeToFile();
     } catch (PcapNativeException e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      //e.printStackTrace();
     }
     return lisTikTokPackets;
   }
@@ -281,29 +282,58 @@ public class Loop {
     // List of all files and directories
     File directoryPath = new File("C:\\Users\\THU BUI\\OneDrive\\Máy tính\\1"); //C:\\Users\\THU BUI\\OneDrive\\Máy tính\\
     File fileList[] = directoryPath.listFiles();
+    System.out.println(fileList.length); 
+    int countFile = directoryPath.listFiles().length;
+    int index = 1;
+    
+    long startime = System.currentTimeMillis();
     for (File file : fileList) {
+      // System.out.println(file.getPath());
+      
       docfile(file.getPath(), filter);
+      index++;
+      if(index%20==0 || index == countFile) {
+        try {
+          startime = System.currentTimeMillis();
+          System.out.println("Start write to DB : "+new Date() +", so luong packet: " + listPacket.size());
+          writeToDatabase(listPacket);
+          System.out.println("insert successful : "+new Date()+". Thoi gian insert: "+(System.currentTimeMillis()-startime));
+          listPacket = new ArrayList<TikTokPacket>();
+        } catch (SQLException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
       // try {
-      //   writeToDatabase(listPacket);
-      //   listPacket = new ArrayList<TikTokPacket>();
-      // } catch (SQLException e) {
-      //   // TODO Auto-generated catch block
-      //   e.printStackTrace();
-      // }
-      System.out.println("Read done!"+file.getName());
+        //   writeToDatabase(listPacket);
+        //   listPacket = new ArrayList<TikTokPacket>();
+        // } catch (SQLException e) {
+          //   // TODO Auto-generated catch block
+          //   //e.printStackTrace();
+          // }
+          // System.out.println("Read done!"+file.getName());
+          // try {
+            //   System.out.println("Start write to DB : "+ file.getName() + new Date() );
+            //   writeToDatabase(listPacket);
+            //   System.out.println("insert successful : "+new Date());
+            // } catch (SQLException e) {
+              //   // TODO Auto-generated catch block
+              //   //e.printStackTrace();
+              // }
     }
+    System.out.println("docfile : "+ (System.currentTimeMillis()-startime) + "s");
     System.out.println("Read done!");
 
-    // Boolean boolean1 = new TikTokPacketDAO().addListTikTokPacket(listPacket);
-    // System.out.println(boolean1);
-    try {
-      System.out.println("Start write to DB");
-      writeToDatabase(listPacket);
-      System.out.println("insert successful");
-    } catch (SQLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    // try {
+    //   startime = System.currentTimeMillis();
+    //   System.out.println("Start write to DB : "+new Date() +", so luong packet: " + listPacket.size());
+    //   writeToDatabase(listPacket);
+    //   System.out.println("insert successful : "+new Date()+". THoi gian insert: "+(System.currentTimeMillis()-startime));
+
+    // } catch (SQLException e) {
+    //   // TODO Auto-generated catch block
+    //   //e.printStackTrace();
+    // }
 
     // final PcapHandle handle =
     // Pcaps.openOffline("1\\dns_00001_20220505090359.pcap");
@@ -386,7 +416,7 @@ public class Loop {
     // // // System.out.println("vlan type 8864");
     // }
     // } catch (Exception e) {
-    // e.printStackTrace();
+    // //e.printStackTrace();
     // }
     // }
     // };
@@ -411,7 +441,7 @@ public class Loop {
     // try {
     // handle.loop(COUNT, listener);
     // } catch (InterruptedException e) {
-    // e.printStackTrace();
+    // //e.printStackTrace();
     // }
     // PcapStat ps = handle.getStats();
     // // System.out.println("ps_recv: " + ps.getNumPacketsReceived());
@@ -440,7 +470,7 @@ public class Loop {
     //   writeToDatabase(listPacket);
     // } catch (SQLException e) {
     //   // TODO Auto-generated catch block
-    //   e.printStackTrace();
+    //   //e.printStackTrace();
     // }
   }
 }
